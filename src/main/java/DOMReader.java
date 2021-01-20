@@ -2,6 +2,7 @@ import org.w3c.dom.*;
 import org.xml.sax.*;
 
 import javax.xml.parsers.*;
+import javax.xml.xpath.*;
 import java.io.*;
 import java.math.*;
 import java.text.*;
@@ -11,9 +12,10 @@ public class DOMReader {
 
     @SuppressWarnings("unused")
     private static final String XMLDATEFORMAT = "yyyy-MM-dd'T'HH:mm:ss";
-    private static final String NSURI = "http://www.example.org/customers";
+//    private static final String NSURI = "http://www.example.org/customers";
 
-    public List<Customer> getDataFromXML(String filename) throws ParseException {
+    public List<Customer> getDataFromXML(String filename, String filter) throws ParseException,
+        XPathExpressionException {
 
         List<Customer> data = new ArrayList<>();
 
@@ -28,7 +30,12 @@ public class DOMReader {
             e.printStackTrace();
         }
 
-        NodeList nodeList = document.getElementsByTagNameNS(NSURI, "customer");
+        XPathFactory xPathFactory = XPathFactory.newInstance();
+        XPath xPath = xPathFactory.newXPath();
+        XPathExpression xPathExpression = xPath.compile(filter);
+        NodeList nodeList = (NodeList) xPathExpression.evaluate(document, XPathConstants.NODESET);
+
+//        NodeList nodeList = document.getElementsByTagName("customer");
 
         for (int i = 0; i < nodeList.getLength(); i++) {
             Customer customer = new Customer();
@@ -54,7 +61,7 @@ public class DOMReader {
 
     private String getTextFromElement(Element customerElement, String elementName) {
 
-        Element node = (Element) customerElement.getElementsByTagNameNS(NSURI, elementName).item(0);
+        Element node = (Element) customerElement.getElementsByTagName(elementName).item(0);
         return node.getTextContent();
     }
 }
